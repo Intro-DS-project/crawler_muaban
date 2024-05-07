@@ -1,0 +1,11 @@
+Scrapy
+lxml
+requests
+bs4
+python-dotenv
+google-generativeai
+pypi-json
+google-auth
+google-auth-oauthlib
+hanoikovoiduocdau
+supabase

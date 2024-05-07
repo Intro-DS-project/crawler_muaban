@@ -23,3 +23,23 @@ class MuabanItem(scrapy.Item):
     post_date = scrapy.Field()
     description = scrapy.Field()
     url = scrapy.Field()
+    
+    def to_dict(self):
+        return {
+            'price': self.get('price'),
+            'area': self.get('area'),
+            'num_bedroom': self.get('num_bedroom'),
+            'num_diningroom': self.get('num_diningroom'),
+            'num_kitchen': self.get('num_kitchen'),
+            'num_toilet': self.get('num_toilet'),
+            'num_floor': self.get('num_floor'),
+            'current_floor': self.get('current_floor'),
+            'street': self.get('street'),
+            'ward': self.get('ward'),
+            'district': self.get('district'),
+            'direction': self.get('direction'),
+            'street_width': self.get('street_width'),
+            'post_date': self.get('post_date'),
+            'description': self.get('description'),
+            'url': self.get('url')
+        }

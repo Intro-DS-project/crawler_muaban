@@ -22,5 +22,9 @@ pip install -r requirements.txt
 ```bash
 $ scrapy crawl muaban -o muaban.json --set FEED_EXPORT_ENCODING=utf-8
 ```
-
+- docker run 
+``` bash 
+$ docker build -t muaban .
+$ docker run -v $(pwd):/app/data muaban
+```
 ### API_KEY 

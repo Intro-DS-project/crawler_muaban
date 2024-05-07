@@ -3,7 +3,9 @@ import scrapy
 from crawler_muaban.items import MuabanItem
 from crawler_muaban.api import extract_description
 from datetime import date, timedelta
+from hanoikovoidcdau import standardize 
 #import sleep 
+from crawler_muaban.remote_database import init
 import time
 
 # thoi gian hom nay
@@ -14,6 +16,7 @@ class MuabanSpider(scrapy.Spider):
       name = 'muaban'
       allowed_domains = ['muaban.net']
       start_urls = ['https://muaban.net/']
+      supabase = init()
       def start_requests(self):
             pages = []
             for i in range(1, 10):
@@ -31,7 +34,9 @@ class MuabanSpider(scrapy.Spider):
                   yield scrapy.Request(url=link, callback=self.parse)
       def parse(self, response, **kwargs):
             item = MuabanItem()
-            item['price'] = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[1]/div/text()').extract_first()
+            price = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[1]/div/text()').extract_first()
+            item['price'] = format_price(price)
+
             address = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[2]/text()').extract_first()
             if address is not None:
                   address = address.split(', ')
@@ -39,11 +44,15 @@ class MuabanSpider(scrapy.Spider):
                         item['street'] = address[-4]
                         item['ward'] = address[-3]
                         item['district'] = address[-2]
+                        item["street"] = standardize.standardize_street_name(item["street"])
+                        item["ward"] = standardize.standardize_ward_name(item["ward"])
+                        item["district"] = standardize.standardize_district_name(item["district"])
             date = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[2]/div[3]/text()')[1].get()
             
             item['post_date'] = date_convert(date)
             item['description'] = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[4]/div/text()').extract_first()
-            item['area'] = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[6]/div[1]/ul/li/span[2]/text()').extract_first()
+            area = response.xpath('//*[@id="__next"]/div[2]/div[3]/div/div[1]/div[2]/div[6]/div[1]/ul/li/span[2]/text()').extract_first()
+            item['area'] = format_area(area)
             item['url'] = response.request.url
 
             fields = extract_description(" ".join(item['description'])).split(',')
@@ -55,6 +64,7 @@ class MuabanSpider(scrapy.Spider):
                               fields_int.append(field)
             item["num_bedroom"], item["num_diningroom"], item["num_kitchen"], item["num_toilet"], item["num_floor"], \
             item["current_floor"], item["direction"], item["street_width"], *_ = fields_int
+            data, count = self.supabase.table("entries").insert([item.to_dict()]).execute()
 
             yield item
 
@@ -66,6 +76,15 @@ def date_convert(date):
                    return (date.today() - timedelta(1)).strftime("%d/%m/%Y")
              else:
                    return date
+def format_price(price):
+       # convert miliion to int
+       price = price.split(' ')[0]
+       price = int(price.replace('.', ''))/10**6
+       return price
 
-
+def format_area(area):
+       # convert m2 to int
+       area = area.split(' ')[0]
+       area = int(area)
+       return area
       

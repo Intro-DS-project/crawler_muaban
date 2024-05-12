@@ -4,7 +4,7 @@ from pathlib import Path
 
 import google.generativeai as genai
 
-load_dotenv(dotenv_path=Path('../../.env'))
+load_dotenv(dotenv_path=Path('./.env'))
 GOOGLE_API_KEY = os.getenv('API_KEY')
 genai.configure(api_key=GOOGLE_API_KEY)
 

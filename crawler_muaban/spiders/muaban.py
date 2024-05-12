@@ -125,6 +125,7 @@ class MuabanSpider(scrapy.Spider):
                                     fields_int.append(field)
                   item["num_bedroom"], item["num_diningroom"], item["num_kitchen"], item["num_toilet"], item["num_floor"], \
                   item["current_floor"], item["direction"], item["street_width"], *_ = fields_int
+            data, count = self.supabase.table("entries").insert([item.to_dict()]).execute()      
             yield item 
                    
 
